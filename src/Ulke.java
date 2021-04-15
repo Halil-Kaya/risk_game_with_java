@@ -5,7 +5,7 @@ public class Ulke implements Comparable<Ulke>{ //kiyaslanabilir olmasi icin Comp
 
     Set<Ulke> komsuUlkeleri; //ulkenin komsularini burda tutuyorum
 
-    public String ulkeAdi;
+    public String ulkeAdi;//ulkenin adi
 
     public int xKordinati;//x kordinatindaki konumu
     public int yKordinati;//y kordinatindaki konumu
@@ -22,7 +22,9 @@ public class Ulke implements Comparable<Ulke>{ //kiyaslanabilir olmasi icin Comp
         this.yKordinati = yKordinati;
         this.genislik = genislik;
         this.yukseklik = yukseklik;
+        this.askerSayisi = 1; // butun ulkeler baslangicta 1 askeri olmasi icin
     }
+
 
     //ulkeyi seciyor
     public void chooseUlke(){
