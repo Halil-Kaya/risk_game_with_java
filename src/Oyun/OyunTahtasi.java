@@ -1,3 +1,5 @@
+package Oyun;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -361,29 +363,14 @@ public class OyunTahtasi extends JPanel {
     }
 
     //oyunculara ulke dagitiyorum
-    public void oyuncularaUlkeDagit() {//bu kisim baslangicta bir kez calisiyor oyunculara rastgele ulke veriyor
-        Ulke[] karismisUlkeler = ulkeleriKaristir();//oncelikle butun ulkeleri karistiriyorum
-        //random bir sekilde oyunculara ulke dagitiyorum
+    public void oyuncularaUlkeDagit() {
         for (int i = 0; i < ulkeler.length; i++) {
             if(i%2 == 0){
-                oyuncular[0].oyuncununUlkeleri.add(karismisUlkeler[i]);
+                oyuncular[0].oyuncununUlkeleri.add(ulkeler[i]);
             }else{
-                oyuncular[1].oyuncununUlkeleri.add(karismisUlkeler[i]);
+                oyuncular[1].oyuncununUlkeleri.add(ulkeler[i]);
             }
         }
-    }
-
-
-    public Ulke[] ulkeleriKaristir() {//butun ulkeleri oyunculara rastgele dagitmak icin ulkeleri rastgele diziye atiyorum
-        Ulke[] karismisUlkeler = ulkeler.clone();
-        for (int i = 0; i < ulkeler.length; i++) {
-            //karistirma islemini yaptigim yer
-            int j = i + (int) ((ulkeler.length - i) * Math.random());
-            Ulke temp = karismisUlkeler[i];
-            karismisUlkeler[i] = karismisUlkeler[j];
-            karismisUlkeler[j] = temp;
-        }
-        return karismisUlkeler;
     }
 
     //eger oyunculardan biri kaybederse durumu guncelleyip oyunu bitiriyorum
@@ -696,7 +683,7 @@ public class OyunTahtasi extends JPanel {
 
         }else if(durum == Durum.FetihSonrasiDurumu){
 
-            bilgiMesaji = "Ulke Fethedildi Asker sayisini paylastir: " + yerlestirilecekAskerSayisi + " tane asker kaldi";
+            bilgiMesaji = "Oyun.Ulke Fethedildi Asker sayisini paylastir: " + yerlestirilecekAskerSayisi + " tane asker kaldi";
 
         }else if(durum == Durum.TransferYapacakUlkeSecmeDurumu){
 
@@ -716,7 +703,7 @@ public class OyunTahtasi extends JPanel {
 
         }
 
-        bilgiMesaji += " <Oyuncu: "+ sira + ">";
+        bilgiMesaji += " <Oyun.Oyuncu: "+ sira + ">";
 
         return bilgiMesaji;
     }

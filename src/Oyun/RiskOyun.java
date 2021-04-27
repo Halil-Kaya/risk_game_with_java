@@ -1,3 +1,8 @@
+package Oyun;
+
+import Client.Client;
+import Message.Message;
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -6,6 +11,8 @@ import java.awt.event.ActionListener;
 import javax.swing.*;
 
 public class RiskOyun implements Runnable {
+
+    public OyunTahtasi oyunTahtasi = null;
 
     public void run() {
 
@@ -19,7 +26,9 @@ public class RiskOyun implements Runnable {
         oyunuBaslat(frame);
     }
 
-    public static void oyunuBaslat(JFrame frame) {
+    public void oyunuBaslat(JFrame frame) {
+
+        RiskOyun riskOyun = new RiskOyun();
 
         JPanel turnPanel = new JPanel();
         JLabel turnInfo = new JLabel();
@@ -28,18 +37,19 @@ public class RiskOyun implements Runnable {
         JPanel statusPanel = new JPanel();
         statusPanel.setPreferredSize(new Dimension(120, 0));
 
-        OyunTahtasi oyunTahtasi = new OyunTahtasi(turnInfo);
+        oyunTahtasi = new OyunTahtasi(turnInfo);
         frame.add(oyunTahtasi, BorderLayout.CENTER);
 
-        JButton next = new JButton("Ilerle");
-        next.addActionListener(new ActionListener() {
+        JButton btnIlerle = new JButton("Ilerle");
+
+        btnIlerle.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 oyunTahtasi.durum();
             }
         });
-        statusPanel.add(next);
+        statusPanel.add(btnIlerle);
 
-        frame.add(statusPanel, BorderLayout.WEST);
+        frame.add(btnIlerle, BorderLayout.EAST);
         frame.add(turnPanel, BorderLayout.SOUTH);
 
         frame.pack();
@@ -47,6 +57,12 @@ public class RiskOyun implements Runnable {
         frame.setResizable(false);
         frame.setVisible(true);
 
+        Client c = new Client(riskOyun);
+        c.Start("127.0.0.1",5000);
+
+        Message m = new Message(Message.Message_Type.SideChoose);
+        m.content =  oyunTahtasi.sira;
+        c.Send(m);
     }
 
 
