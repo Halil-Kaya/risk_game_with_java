@@ -1,9 +1,10 @@
 package Oyun;
 
 import java.awt.*;
+import java.io.Serializable;
 import java.util.Set;
 
-public class Ulke implements Comparable<Ulke>{ //kiyaslanabilir olmasi icin Comparable dan kalitim aliyorum
+public class Ulke implements Comparable<Ulke> , Serializable { //kiyaslanabilir olmasi icin Comparable dan kalitim aliyorum
 
     Set<Ulke> komsuUlkeleri; //ulkenin komsularini burda tutuyorum
 

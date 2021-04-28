@@ -81,6 +81,9 @@ class Listen extends Thread {
                         case Move:
                             Server.Send(TheClient.rival,received);
                             break;
+                        case Next:
+                            Server.Send(TheClient.rival,received);
+                            break;
 
 
 

@@ -6,6 +6,7 @@ import Message.Message;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -93,13 +94,15 @@ class Listen extends Thread {
                 //mesaj tipine göre yapılacak işlemi ayır.
                 switch (received.type) {
                     case StartGame:
-                        System.out.println("HALİL "+(String)received.content);
                         break;
                     case SideChoose:
                         client.riskOyun.oyunTahtasi.sira = (int) received.content;
                         break;
                     case Move:
                         //client.game.MoveServer((ArrayList<Object>) received.content,client.game);
+                        break;
+                    case Next:
+                        client.riskOyun.oyunTahtasi.ReadMessageFromOpponent(received.content);
                         break;
 
                 }

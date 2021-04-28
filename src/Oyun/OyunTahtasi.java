@@ -1,16 +1,21 @@
 package Oyun;
 
+import Client.Client;
+import Message.Message;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-public class OyunTahtasi extends JPanel {
+public class OyunTahtasi extends JPanel implements Serializable {
 
+    Client c;
 
     public static List<Set<Ulke>> kitalar;//kitalari tutuyorum kitalarinin icinde ulkeler var
     public static Ulke[] ulkeler;//ulkeleri tutuyorum
@@ -23,6 +28,8 @@ public class OyunTahtasi extends JPanel {
     public static Color[] ulkeRenkleri = {Color.CYAN, Color.MAGENTA};
 
     public static int sira = 0;//siranin kimde oldugunu takip etmek icin bu degiskeni kullaniyorum
+    public static int degisenSira = 0;
+
     public static int yerlestirilecekAskerSayisi;//yerlestirilecek asker sayisini bu degiskene atiyorum
     public static Ulke seciliUlke;//secili ulkeyi bu degiskene atiyorum
     public static Ulke seciliIkinciUlke;//secili ikinci ulkeyi bu degiskene atiyorum
@@ -40,7 +47,9 @@ public class OyunTahtasi extends JPanel {
     //ilk durum baslangic durumu
     public Durum durum = Durum.BaslangicDurumu;
 
-    public OyunTahtasi(JLabel siraBilgisi) {
+    public OyunTahtasi(JLabel siraBilgisi, Client c) {
+
+        this.c=c;
         this.siraBilgisi = siraBilgisi;
 
         //oyunculari olusturuyorum
@@ -64,45 +73,48 @@ public class OyunTahtasi extends JPanel {
         addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
                 Point mouse = e.getPoint();
+                if(degisenSira == sira){
+                    if(durum == Durum.BaslangicDurumu || durum == Durum.AskerYerlestirmeDurumu){
+                        //duruma gore asker yerlestirtiyorum
+                        askerYerlestir(mouse);
 
-                if(durum == Durum.BaslangicDurumu || durum == Durum.AskerYerlestirmeDurumu){
-                    //duruma gore asker yerlestirtiyorum
-                    askerYerlestir(mouse);
+                    }else if(durum == Durum.SaldiriyiYapacakUlkeSecmeDurumu || durum == Durum.TransferYapacakUlkeSecmeDurumu){
+                        //saldirma durumundaysa saldiri yapacak olan ulkeyi sectirtiyorum burda oyuncu sadece kendi 1 askerden fazla olan ulkesini secebilir
+                        sahipOlunanUlkeyiSec(mouse);
 
-                }else if(durum == Durum.SaldiriyiYapacakUlkeSecmeDurumu || durum == Durum.TransferYapacakUlkeSecmeDurumu){
-                    //saldirma durumundaysa saldiri yapacak olan ulkeyi sectirtiyorum burda oyuncu sadece kendi 1 askerden fazla olan ulkesini secebilir
-                    sahipOlunanUlkeyiSec(mouse);
+                    }else if(durum == Durum.SaldirmaDurumu){
+                        //saldirma durumundaysa saldiri yapabilecek dusman ulkeyi sectiriyorum sadece sinir komsulugu varsa saldirabilir
+                        dusmanUlkeSec(mouse);
 
-                }else if(durum == Durum.SaldirmaDurumu){
-                    //saldirma durumundaysa saldiri yapabilecek dusman ulkeyi sectiriyorum sadece sinir komsulugu varsa saldirabilir
-                    dusmanUlkeSec(mouse);
-
-                }else if(durum == Durum.SaldiriyaDevamEtmeDurumu){
-                    //saldirmaya devam etsin durumundaysa eger hala asker varsa saldiriya devam ediyor
-                    saldirmayaDevamEt(mouse);
-
-
-                }else if(durum == Durum.FetihSonrasiDurumu){
-                    //saldiri basarili ise asker yerlestirme durumuna geciyorum yeni feth edilen ulkeye kac asker yerlestirilsin
-                    yeniUlkeyeAskerYerlestir(mouse);
+                    }else if(durum == Durum.SaldiriyaDevamEtmeDurumu){
+                        //saldirmaya devam etsin durumundaysa eger hala asker varsa saldiriya devam ediyor
+                        saldirmayaDevamEt(mouse);
 
 
-                }else if(durum == Durum.TransferDurumu){
-                    //asker transfer etmemi sagliyor
-                    askerTransferEdilecekUlkeyiSec(mouse);
+                    }else if(durum == Durum.FetihSonrasiDurumu){
+                        //saldiri basarili ise asker yerlestirme durumuna geciyorum yeni feth edilen ulkeye kac asker yerlestirilsin
+                        yeniUlkeyeAskerYerlestir(mouse);
 
 
-                }else if(durum == Durum.TransfereDevamEtmeDurumu){
-                    //asker transfer etmeye devam ediyorum
-                    if (seciliIkinciUlke.sinirdaMi(mouse)) {
-                        askerTransferEt();
+                    }else if(durum == Durum.TransferDurumu){
+                        //asker transfer etmemi sagliyor
+                        askerTransferEdilecekUlkeyiSec(mouse);
+
+
+                    }else if(durum == Durum.TransfereDevamEtmeDurumu){
+                        //asker transfer etmeye devam ediyorum
+                        if (seciliIkinciUlke.sinirdaMi(mouse)) {
+                            askerTransferEt();
+                        }
                     }
+
+                    //oyuncuya durum hakkinda bilgi veriyorum
+                    OyunTahtasi.this.siraBilgisi.setText(ekranaBilgiBastir());
+                    //tahtayi yeniden ciziyorum
+                    repaint();
+
                 }
 
-                //oyuncuya durum hakkinda bilgi veriyorum
-                OyunTahtasi.this.siraBilgisi.setText(ekranaBilgiBastir());
-                //tahtayi yeniden ciziyorum
-                repaint();
             }
 
         });
@@ -399,7 +411,10 @@ public class OyunTahtasi extends JPanel {
         //yerlestirilecek asker sayisi bittiyse durumu degistiriyorum
         if (yerlestirilecekAskerSayisi == 0) {
             if (durum == Durum.BaslangicDurumu){
-                sira++;//artik sira diger oyuncuya gecti
+                int tmpSira = ++sira;
+                siraDegis();
+                degisenSira = (degisenSira + 1 )%2;
+                sira = tmpSira;
                 if (sira == oyuncular.length) {
                     sira = 0;
                     yerlestirilecekBirlikleriGuncelle();//birlikleri guncelliyorum
@@ -539,9 +554,39 @@ public class OyunTahtasi extends JPanel {
     public void sonrakiOyuncu() {
         seciliUlke = null;
         seciliIkinciUlke = null;
-        sira = (sira + 1) % 2;//sira atliyorum
+        siraDegis();//sira atliyorum
         durum = Durum.AskerYerlestirmeDurumu;//durumu guncelliyorum
         yerlestirilecekBirlikleriGuncelle();//asker sayisini guncelliyorum
+
+    }
+
+    public void siraDegis(){
+        //sira = (sira + 1) % 2;//sira atliyorum
+        degisenSira= (degisenSira + 1)%2;
+        SendMessageToOpponent();
+    }
+
+    public void SendMessageToOpponent(){
+        Message x = new Message(Message.Message_Type.Next);
+        x.content = ulkeler;
+        c.Send(x);
+        System.out.println("Bilgiler rakibe aktarılıyor");
+    }
+
+    public void ReadMessageFromOpponent(Object msg){
+        Ulke[] gelenUlkeler = (Ulke[]) msg;
+
+        for(int i = 0;i < gelenUlkeler.length;i++){
+
+            System.out.println("-ulke adi: "+ulkeler[i].ulkeAdi + " asker sayisi: " + ulkeler[i].askerSayisi);
+            System.out.println("+ulke adi: "+gelenUlkeler[i].ulkeAdi + " asker sayisi: " + gelenUlkeler[i].askerSayisi);
+            ulkeler[i].askerSayisi = gelenUlkeler[i].askerSayisi;
+
+        }
+
+        System.out.println("Bilgiler rakipten okunuyor");
+        repaint();
+        degisenSira = (degisenSira + 1)%2;
     }
 
     //o anki duruma gore sonraki duruma geciyorum
@@ -712,6 +757,7 @@ public class OyunTahtasi extends JPanel {
     public void durum() {
 
         if(durum == Durum.SaldiriyiYapacakUlkeSecmeDurumu){
+
 
             durum = Durum.TransferYapacakUlkeSecmeDurumu;
             seciliUlke = null;
